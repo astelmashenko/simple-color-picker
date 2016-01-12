@@ -5,6 +5,6 @@ This is a very simple Polymer color-picker.
 Example:
 
 ```html
-<simple-color-picker></simple-color-picker>
+<simple-color-picker width="300" height="200"></simple-color-picker>
 <simple-color-picker color="{{selectedColor}}" on-color-changed="colorChanged"></simple-color-picker>
 ```
