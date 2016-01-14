@@ -12,49 +12,82 @@
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../simple-color-picker.html">
+    <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+    <link rel="import" href="../../iron-icons/editor-icons.html">
     <link rel="import" href="../../paper-material/paper-material.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
   </head>
   <style is="custom-style" include="demo-pages-shared-styles">
   </style>
-  <style type="text/css">
-    paper-material {
-      padding: 20px;
+  <style>
+    .centered-demo {
       text-align: center;
     }
-    #colorHex {
-      margin-top: 10px;
-    }
-    #color {
-      padding: 20px;
-      margin: 10px 30px 0 30px;
-      background-color: #E8E8E8;
+    pre {
+      text-align: left;
     }
   </style>
   <body unresolved>
-    <template id="app" is="dom-bind">
+    
     <div class="vertical-section-container centered">
       <h3>A color picker</h3>
-      <paper-material elevation="1">
-        <simple-color-picker on-color-changed="onColorChanged"></simple-color-picker>
-        <div id="colorHex">#E8E8E8</div>
-        <div id="color"></div>
-      </paper-material>
+      <demo-snippet class="centered-demo">
+        <template>
+          <simple-color-picker></simple-color-picker>
+        </template>
+      </demo-snippet>
+
+      <h3>A color picker with preview</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <simple-color-picker preview></simple-color-picker>
+        </template>
+      </demo-snippet>
+
+
+      <dom-module id="color-picker-with-button">
+        <template>
+          <paper-icon-button
+            id="iconButton"
+            icon="editor:format-color-fill"
+            on-tap="_tapHandler"></paper-icon-button>
+          <br/>
+          <simple-color-picker id="colorPicker"
+                                width="200"
+                                height="100"
+                                on-color-changed="_colorChanged"
+                                on-color-track="_onColorTrack"></simple-color-picker>
+        </template>
+        <script>
+          HTMLImports.whenReady(function () {
+            Polymer({
+              is: 'color-picker-with-button',
+              ready: function() {
+                this.$.colorPicker.close();
+              },
+              _tapHandler: function() {
+                this.$.colorPicker.open();
+              },
+              _colorChanged: function(e) {
+                this.$.iconButton.style.color = e.detail.value.hex;
+                this.$.colorPicker.close();
+              },
+              _onColorTrack: function(e) {
+                this.$.iconButton.style.color = e.detail.hex;
+              }
+            });
+          });
+        </script>
+      </dom-module>
+
+      <h3>A color picker customized</h3>
+      <demo-snippet class="centered-demo">
+        <template>
+          <color-picker-with-button></color-picker-with-button>
+        </template>
+      </demo-snippet>
     </div>
-    </template>
+    
   </body>
-  <script>
-  (function(document) {
-      'use strict';
-      var app = document.querySelector('#app');
-      
-      app.onColorChanged = function(e) {
-        var color = document.querySelector('#color');
-        color.style.backgroundColor = e.detail.value.hex;
-        var colorHex = document.querySelector('#colorHex');
-        colorHex.textContent = e.detail.value.hex;
-      }
-    })(document);
-  </script>
 </html>

@@ -11,7 +11,13 @@ Example:
 -->
 
 <dom-module id="simple-color-picker">
+  <style>
+    #preview {
+      margin-bottom: -3px;
+    }
+  </style>
   <template>
+    <div id="preview"></div>
     <canvas id="colorPicker" width="[[width]]" height="[[height]]" on-tap="_handleTap" on-track="_handleTrack"></canvas>
   </template>
 </dom-module>
@@ -41,31 +47,63 @@ Example:
         color: {
           type: Object,
           notify: true
+        },
+        previewColor: {
+          type: String,
+          value: '#E8E8E8'
+        },
+        preview: {
+          type: Boolean,
+          value: false
+        },
+        previewHeight: {
+          type: Number,
+          value: 40
         }
+      },
+
+      open: function() {
+        this.style.display = 'block';
+      },
+
+      close: function() {
+        this.style.display = 'none';
       },
 
       _handleTrack: function(e) {
         switch(e.detail.state) {
           case 'track':
+            var color = this._onColorSelect(e.detail);
+            this._updatePreview(color);
+            this.fire('color-track', color);
+            break;
           case 'end':
-            this._onColorSelect(e.detail);
+            this.color = this._onColorSelect(e.detail);
+            this._updatePreview(this.color);
             break;
         }
       },
 
       _handleTap: function(e) {
-        this._onColorSelect(e.detail);
+        this.color = this._onColorSelect(e.detail);
+        this._updatePreview(this.color);
       },
 
       _onColorSelect: function (e, coords) {
         if (this._context) {
           coords = coords || this._relativeMouseCoordinates(e);
           var data = this._context.getImageData(coords.x, coords.y, 1, 1).data;
-          this._setColor({
+          return this._makeColor({
             r: data[0],
             g: data[1],
             b: data[2]
           });
+        }
+      },
+
+      _updatePreview: function(color) {
+        if (this.preview) {
+          this.$.preview.style.backgroundColor = color.hex;
         }
       },
 
@@ -76,8 +114,8 @@ Example:
         return { x: x, y: y };
       },
 
-      _setColor: function (rgb) {
-        this.color = {
+      _makeColor: function (rgb) {
+        return {
           hex: this._rgbToHex(rgb),
           rgb: rgb
         };
@@ -94,6 +132,13 @@ Example:
 
       _rgbToHex: function (color) {
         return '#' + this._componentToHex(color.r) + this._componentToHex(color.g) + this._componentToHex(color.b);
+      },
+
+      _initPreview: function() {
+        this.$.preview.style.width = this.width + 'px';
+        this.$.preview.style.height = this.previewHeight + 'px';
+        this.$.preview.style.backgroundColor = (this.color && this.color.hex) ? this.color.hex : this.previewColor;
+        this.$.preview.style.display = this.preview ? 'inline-block' : 'none';
       },
 
       attached: function () {
@@ -117,7 +162,10 @@ Example:
         bwGradient.addColorStop(1, 'rgba(0,0,0,1)');
         this._context.fillStyle = bwGradient;
         this._context.fillRect(0, 0, this.$.colorPicker.width, this.$.colorPicker.height);
+
+        this._initPreview();
       }
+
     });
   })();
 </script>
